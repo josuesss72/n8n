@@ -1,0 +1,358 @@
+{
+  "name": "Filter-jobs-linkedin",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -160,
+        -80
+      ],
+      "id": "2f6893e0-5f99-4abb-b809-dc8ba14b1b64",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 23
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -160,
+        112
+      ],
+      "id": "d2aff5aa-107e-4115-9201-65e9145a286a",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "url": "https://www.linkedin.com/jobs/search/?currentJobId=4302817418&geoId=100876405&keywords=react.js&origin=JOB_SEARCH_PAGE_SEARCH_BUTTON&refresh=true",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        176,
+        48
+      ],
+      "id": "fa8eba6f-afa7-4673-b620-8764725fe2ea",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "operation": "extractHtmlContent",
+        "extractionValues": {
+          "values": [
+            {
+              "key": "links",
+              "cssSelector": ".base-card__full-link",
+              "returnValue": "attribute",
+              "attribute": "href",
+              "returnArray": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        384,
+        48
+      ],
+      "id": "451d0cbf-467a-4eb5-93d5-a6d5b8603d29",
+      "name": "HTML"
+    },
+    {
+      "parameters": {
+        "maxItems": 15
+      },
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        1552,
+        48
+      ],
+      "id": "b2ff0643-064b-41fc-9fa4-286be88d2a28",
+      "name": "Limit"
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "#general-jhosuacode",
+          "mode": "name"
+        },
+        "text": "=Titulo: {{ $json.title }}\nLink: {{ $json.link }}\nCompania: {{ $json.company }}",
+        "otherOptions": {
+          "includeLinkToWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        1744,
+        48
+      ],
+      "id": "4ac79b51-eb3b-4a56-aa84-5349abab7db8",
+      "name": "Send a message",
+      "webhookId": "0dbb74b8-8d4d-466b-b9a9-9ade22ca7b29",
+      "credentials": {
+        "slackApi": {
+          "id": "aSbrrfLCLnqO9Pqh",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.link }}",
+        "options": {
+          "batching": {
+            "batch": {
+              "batchSize": 1,
+              "batchInterval": 2000
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        800,
+        48
+      ],
+      "id": "649bea07-94f8-4e81-a5c5-a0f338222d2f",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nconst data = $input.all();\n\nconst keywords = ['react', 'frontend', 'frontend junior'];\n\nconst newData = data\n  .map(item => item.json) // obtengo solo el objeto\n  .filter(job => {\n    const title = job.title.toLowerCase();\n    return keywords.some(word => title.includes(word));\n  });\n\nreturn newData;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1168,
+        48
+      ],
+      "id": "f0959094-2b29-4edc-8662-43d89cee1e8a",
+      "name": "filter-jobs"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nconst { links } = $input.first().json;\n\nconst data = [];\n\nfor(const indx of links.keys()){\n  data.push({\n    link: links[indx],\n  })\n}\n\nreturn data;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        592,
+        48
+      ],
+      "id": "6751d9b5-503b-499f-a923-45c8c92014c1",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "operation": "extractHtmlContent",
+        "extractionValues": {
+          "values": [
+            {
+              "key": "title",
+              "cssSelector": ".top-card-layout__title"
+            },
+            {
+              "key": "company",
+              "cssSelector": ".topcard__org-name-link"
+            },
+            {
+              "key": "request-type",
+              "cssSelector": ".top-card-layout__cta--primary"
+            },
+            {
+              "key": "link",
+              "cssSelector": ".base-card__full-link",
+              "returnValue": "attribute",
+              "attribute": "href"
+            },
+            {
+              "key": "description",
+              "cssSelector": ".show-more-less-html__markup",
+              "returnValue": "html"
+            }
+          ]
+        },
+        "options": {
+          "trimValues": true
+        }
+      },
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        992,
+        48
+      ],
+      "id": "d19445a7-3def-4048-85b3-40dd32c41375",
+      "name": "HTML1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\n\nconst newdata = []\n\nfor (const item of $input.all()) {\n  const { description, ...rest } =  item.json\n  const clean = description.replace(/<[^>]+>/g, '');\n  const text = description\n  .replace(/<br\\s*\\/?>/gi, '\\n') // convertir <br> a salto de línea\n  .replace(/<[^>]+>/g, '')       // quitar el resto de etiquetas\n  .trim();\n\n  const lines = text.split(/\\r?\\n/).filter(l => l.trim() !== '');\nconst firstThree = lines.slice(0, 3).join('\\n');\n  newdata.push({\n    ...rest,\n    description: firstThree\n  })\n}\n\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1360,
+        48
+      ],
+      "id": "ddad9e76-8666-4dea-b219-7ade8bb37b43",
+      "name": "Code in JavaScript1"
+    }
+  ],
+  "pinData": {
+    "Schedule Trigger": [
+      {
+        "json": {
+          "name": "First item",
+          "code": 1
+        }
+      },
+      {
+        "json": {
+          "name": "Second item",
+          "code": 2
+        }
+      }
+    ]
+  },
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "HTML1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "filter-jobs": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML1": {
+      "main": [
+        [
+          {
+            "node": "filter-jobs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "b19da1b2-d0e7-4eb4-b227-bd65fbad2222",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "99e1e77928f0cd066bee8c660e8cd899c7418ac97d87ae599e098ad272929ae2"
+  },
+  "id": "Va5aaRNwVszrAlTJ",
+  "tags": []
+}
