@@ -5,6 +5,7 @@ Cada proyecto está organizado en una carpeta independiente con su propia docume
 
 ## 📂 Estructura del repositorio
 
+`bash
 /n8n-projects
 │── Filter-jobs-linkedin/
 │ ├── README.md
@@ -15,6 +16,7 @@ Cada proyecto está organizado en una carpeta independiente con su propia docume
 │ └── workflow.json
 │
 └──
+`
 
 - Cada carpeta corresponde a un **proyecto de automatización** en n8n.
 - Dentro de cada carpeta encontrarás:
