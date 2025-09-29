@@ -77,7 +77,7 @@
       "type": "n8n-nodes-base.limit",
       "typeVersion": 1,
       "position": [
-        1552,
+        1344,
         48
       ],
       "id": "b2ff0643-064b-41fc-9fa4-286be88d2a28",
@@ -91,7 +91,7 @@
           "value": "#general-jhosuacode",
           "mode": "name"
         },
-        "text": "=Titulo: {{ $json.title }}\nLink: {{ $json.link }}\nCompania: {{ $json.company }}",
+        "text": "=Titulo: {{ $('Limit').item.json.title }}\nLink: {{ $('Limit').item.json.link }}\nCompania: {{ $('Limit').item.json.company }}\ndescription: {{ $json.message.content }}",
         "otherOptions": {
           "includeLinkToWorkflow": false
         }
@@ -99,7 +99,7 @@
       "type": "n8n-nodes-base.slack",
       "typeVersion": 2.3,
       "position": [
-        1744,
+        1888,
         48
       ],
       "id": "4ac79b51-eb3b-4a56-aa84-5349abab7db8",
@@ -204,16 +204,35 @@
     },
     {
       "parameters": {
-        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\n\nconst newdata = []\n\nfor (const item of $input.all()) {\n  const { description, ...rest } =  item.json\n  const clean = description.replace(/<[^>]+>/g, '');\n  const text = description\n  .replace(/<br\\s*\\/?>/gi, '\\n') // convertir <br> a salto de línea\n  .replace(/<[^>]+>/g, '')       // quitar el resto de etiquetas\n  .trim();\n\n  const lines = text.split(/\\r?\\n/).filter(l => l.trim() !== '');\nconst firstThree = lines.slice(0, 3).join('\\n');\n  newdata.push({\n    ...rest,\n    description: firstThree\n  })\n}\n\nreturn $input.all();"
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4.1-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4.1-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=reduce esta descripcion de vacante a con los datos mas importantes como salario, Tipo de contrato, Requisitos principales, Responsabilidades, Beneficios / Perks, Fecha de publicación / vigencia, y que maximo tenga 4 lienas, tambien limpia el texto quitando todas etiquetas html.\n{{ $json.description }}"
+            }
+          ]
+        },
+        "options": {}
       },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
       "position": [
-        1360,
+        1536,
         48
       ],
-      "id": "ddad9e76-8666-4dea-b219-7ade8bb37b43",
-      "name": "Code in JavaScript1"
+      "id": "dddf43b9-ef00-4a55-8b6a-a7e7963ca0f9",
+      "name": "Message a model",
+      "credentials": {
+        "openAiApi": {
+          "id": "Y7NT3kgXDNiedO9V",
+          "name": "OpenAi account"
+        }
+      }
     }
   ],
   "pinData": {
@@ -246,13 +265,7 @@
     },
     "Schedule Trigger": {
       "main": [
-        [
-          {
-            "node": "HTTP Request",
-            "type": "main",
-            "index": 0
-          }
-        ]
+        []
       ]
     },
     "HTTP Request": {
@@ -281,7 +294,7 @@
       "main": [
         [
           {
-            "node": "Send a message",
+            "node": "Message a model",
             "type": "main",
             "index": 0
           }
@@ -303,7 +316,7 @@
       "main": [
         [
           {
-            "node": "Code in JavaScript1",
+            "node": "Limit",
             "type": "main",
             "index": 0
           }
@@ -332,11 +345,11 @@
         ]
       ]
     },
-    "Code in JavaScript1": {
+    "Message a model": {
       "main": [
         [
           {
-            "node": "Limit",
+            "node": "Send a message",
             "type": "main",
             "index": 0
           }
@@ -348,7 +361,7 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "b19da1b2-d0e7-4eb4-b227-bd65fbad2222",
+  "versionId": "41ce280e-d57e-497f-bb8f-0c0901f11137",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "99e1e77928f0cd066bee8c660e8cd899c7418ac97d87ae599e098ad272929ae2"
