@@ -2,7 +2,7 @@
 
 Este workflow de **n8n** automatiza la búsqueda de ofertas de empleo en LinkedIn, las filtra según palabras clave, resume la descripción de cada vacante usando **OpenAI** y finalmente envía los resultados a un canal de **Slack**.
 
-[!imagen](./image.PNG)
+![imagen](./image.PNG)
 
 ---
 
